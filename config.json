@@ -8,6 +8,6 @@
     "num_preidct_workers": 2,
     "embd_size": 128,
     "lr": 1e-4,
-    "num_epochs": 100,
+    "num_epochs": 1,
     "batch_size": 1024
 }
