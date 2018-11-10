@@ -18,7 +18,7 @@ import json
 import pickle as cPickle
 import tensorflow as tf
 
-# import fire
+# import fire 
 import h5py
 import numpy as np
 
