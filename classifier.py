@@ -16,8 +16,9 @@
 import os
 import json
 import pickle as cPickle
+import tensorflow as tf
 
-import fire
+# import fire
 import h5py
 import numpy as np
 
@@ -31,21 +32,25 @@ DATA_ROOT = './data/train'
 OUT_DIR = './model/train'
 
 
+def get_sample_generator(ds, batch_size):
+    left, limit = 0, ds['uni'].shape[0]
+
+    while True:
+        right = min(left + batch_size, limit)
+        X = [ds[t][left:right, :] for t in ['uni', 'w_uni']]
+        Y = ds['cate'][left:right]
+
+        yield X, Y
+
+        left = right
+        if right == limit:
+            left = 0
+
+
 class Classifier():
     def __init__(self):
         self.logger = get_logger('Classifier')
         self.num_classes = 0
-
-    def get_sample_generator(self, ds, batch_size):
-        left, limit = 0, ds['uni'].shape[0]
-        while True:
-            right = min(left + batch_size, limit)
-            X = [ds[t][left:right, :] for t in ['uni', 'w_uni']]
-            Y = ds['cate'][left:right]
-            yield X, Y
-            left = right
-            if right == limit:
-                left = 0
 
     def predict(self):
         pass
@@ -74,13 +79,24 @@ class Classifier():
         model = TextModel(self.num_classes).model
 
         total_train_samples = train['uni'].shape[0]
-        train_gen = self.get_sample_generator(train, batch_size=opt['batch_size'])
+        train_gen = get_sample_generator(train, batch_size=opt['batch_size'])
+        self.steps_per_epoch = int(np.ceil(total_train_samples / float(opt['batch_size'])))
 
-        # total_dev_samples = dev['uni'].shape[0]
-        # dev_gen = self.get_sample_generator(dev, batch_size=opt['batch_size])
+        total_dev_samples = dev['uni'].shape[0]
+        dev_gen = get_sample_generator(dev, batch_size=opt['batch_size'])
+        self.validation_steps = int(np.ceil(total_dev_samples / float(opt['batch_size'])))
+
+        model.fit_generator(generator=train_gen,
+                            steps_per_epoch=self.steps_per_epoch,
+                            epochs=opt['num_epochs'],
+                            validation_data=dev_gen,
+                            validation_steps=self.validation_steps,
+                            shuffle=True,
+                            callbacks=[tf.keras.callbacks.ModelCheckpoint('./model.h5', verbose=1)])
 
 
 if __name__ == '__main__':
     clsf = Classifier()
-    fire.Fire({'train': clsf.train,
-               'predict': clsf.predict})
+    clsf.train()
+    # fire.Fire({'train': clsf.train,
+    #            'predict': clsf.predict})
