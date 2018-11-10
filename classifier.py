@@ -15,8 +15,7 @@
 
 import os
 import json
-import cPickle
-from itertools import izip
+import pickle as cPickle
 
 import fire
 import h5py
@@ -29,8 +28,8 @@ from misc import get_logger, Option
 from network import TextOnly, top1_acc
 
 opt = Option('./config.json')
-cate1 = json.loads(open('../cate1.json').read())
-DEV_DATA_LIST = ['../dev.chunk.01']
+cate1 = json.loads(open('./cate1.json').read())
+DEV_DATA_LIST = ['./dev.chunk.01']
 
 
 class Classifier():
@@ -65,7 +64,7 @@ class Classifier():
         y2l = map(lambda x: x[1], sorted(y2l.items(), key=lambda x: x[0]))
         inv_cate1 = self.get_inverted_cate1(cate1)
         rets = {}
-        for pid, p in izip(data['pid'], pred_y):
+        for pid, p in zip(data['pid'], pred_y):
             y = np.argmax(p)
             label = y2l[y]
             tkns = map(int, label.split('>'))
@@ -85,7 +84,7 @@ class Classifier():
         with open(out_path, 'w') as fout:
             for pid in pid_order:
                 ans = rets.get(pid, no_answer.format(pid=pid))
-                print >> fout, ans
+                print(fout, ans)
 
     def predict(self, data_root, model_root, test_root, test_div, out_path, readable=False):
         meta_path = os.path.join(data_root, 'meta')
