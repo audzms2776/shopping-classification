@@ -18,7 +18,7 @@ import json
 import pickle as cPickle
 import tensorflow as tf
 
-# import fire 
+# import fire
 import h5py
 import numpy as np
 
@@ -52,8 +52,30 @@ class Classifier():
         self.logger = get_logger('Classifier')
         self.num_classes = 0
 
+
     def predict(self):
-        pass
+        meta_path = os.path.join(DATA_ROOT, 'meta')
+        meta = cPickle.loads(open(meta_path, 'rb').read())
+
+        model_fname = os.path.join(model_root, 'model.h5')
+        self.logger.info('# of classes(train): %s' % len(meta['y_vocab']))
+        model = tf.keras.models.load_model(model_fname)
+
+        test_path = os.path.join(test_root, 'data.h5py')
+        test_data = h5py.File(test_path, 'r')
+        test = test_data[test_div]
+
+        test_gen = get_sample_generator(test, opt.batch_size)
+        total_test_samples = test['uni'].shape[0]
+        steps = int(np.ceil(total_test_samples / float(opt.batch_size)))
+
+        pred_y = model.predict_generator(test_gen,
+                                         steps=steps,
+                                         workers=opt.num_predict_workers,
+                                         verbose=1)
+
+        self.write_prediction_result(test, pred_y, meta, out_path, readable=readable)
+
 
     def train(self):
         data_path = os.path.join(DATA_ROOT, 'data.h5py')
@@ -61,11 +83,6 @@ class Classifier():
 
         data = h5py.File(data_path, 'r')
         meta = cPickle.loads(open(meta_path, 'rb').read())
-
-        self.weight_fname = os.path.join(OUT_DIR, 'weights')
-        self.model_fname = os.path.join(OUT_DIR, 'model')
-        if not os.path.isdir(OUT_DIR):
-            os.makedirs(OUT_DIR)
 
         self.logger.info('# of classes: %s' % len(meta['y_vocab']))
         self.num_classes = len(meta['y_vocab'])
@@ -97,6 +114,5 @@ class Classifier():
 
 if __name__ == '__main__':
     clsf = Classifier()
-    clsf.train()
-    # fire.Fire({'train': clsf.train,
-    #            'predict': clsf.predict})
+    
+    fire.Fire({'train': clsf.train, 'predict': clsf.predict})
