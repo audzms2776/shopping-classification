@@ -2,7 +2,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8743cab694324b45a4acfeff564d8f2b)](https://app.codacy.com/app/audzms2776/shopping-classification?utm_source=github.com&utm_medium=referral&utm_content=audzms2776/shopping-classification&utm_campaign=Badge_Grade_Dashboard)
 
-`쇼핑몰 상품 카테고리 분류` 대회 참가자에게 제공되는 코드 베이스입니다. 전처리와 간단한 분류기 그리고 평가 코드로 구성되어 있습니다. (코드는 python2, keras, tensorflow 기준으로 작성되었습니다.)
+`쇼핑몰 상품 카테고리 분류` 대회 참가자에게 제공되는 코드 베이스입니다. 전처리와 간단한 분류기 그리고 평가 코드로 구성되어 있습니다. (코드는 python2, keras, tensorflow 기준으로 작성되었습니다.) <br/>
+`tf keras 수정 && 코드 `
 
 ## 실행 방법
 
